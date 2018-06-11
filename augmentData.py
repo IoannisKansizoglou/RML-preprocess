@@ -97,16 +97,16 @@ def translate_images(image, offset):
     return translated_img
 
 
-def augment_face(image, face_case):
+def augment_face(image, face_case, seed):
 
     if face_case == 1:
 
-        angle = int(round(random()*30))
+        angle = int(round(seed*30))
         image = rotate_images(image, angle)
 
     elif face_case == 2:
 
-        angle = int(round(random()*30))
+        angle = int(round(seed*30))
         image = rotate_images(image, -angle)
 
     elif face_case == 3:
@@ -115,22 +115,22 @@ def augment_face(image, face_case):
 
     elif face_case == 4:
 
-        offset = random()*0.5
+        offset = seed*0.5
         image = translate_images(image, np.array([-offset, offset]))
 
     elif face_case == 5:
 
-        offset = random()*0.5
+        offset = seed*0.5
         image = translate_images(image, np.array([-offset, -offset]))
 
     elif face_case == 6:
 
-        offset = random()*0.5
+        offset = seed*0.5
         image = translate_images(image, np.array([offset, offset]))
 
     elif face_case == 7:
 
-        offset = random()*0.5
+        offset = seed*0.5
         image = translate_images(image, np.array([offset, -offset]))
 
     return image
@@ -293,11 +293,11 @@ def augment_spectrogram(spectrogram, warper):
 def main(unused_argv):
 
     
-    imagePATH='/home/gryphonlab/Ioannis/Works/CODES/RML/frame51.jpg'
+    imagePATH='/home/gryphonlab/Ioannis/Works/BAUM-1/InputFaces/BAUM1s_MP4_all/S021_077/frame42.jpg'
     image_string = tf.read_file(imagePATH)
     original = tf.image.decode_jpeg(image_string, channels=3)
     image = tf.image.convert_image_dtype(original,tf.float32)
-    image = tf.reshape(original,[image_width,image_height,3])
+    #image = tf.reshape(original,[image_width,image_height,3])
     
     image = tf.image.resize_images(image,[224,224], method=tf.image.ResizeMethod.NEAREST_NEIGHBOR)
     image = augment_face(image, 6)
