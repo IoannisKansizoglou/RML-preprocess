@@ -25,136 +25,19 @@ _MEL_HIGH_FREQUENCY_Q = 1127.0
 ############################# FUNCTIONS ############################
 
 
-def central_scale_images(image, scale):
+def augment_face(image,angle):
 
-    x1 = y1 = 0,5 - 0,5*scale
-    x2 = y2 = 0,5 + 0,5*scale
-    box = np.array([y1, x1, y2, x2])
+    #image = tf.image.random_flip_left_right(image)
+    #image = tf.image.random_flip_up_down(image)
+    image = tf.image.random_brightness(image, max_delta=25/255)
+    image = tf.image.random_saturation(image, lower=0.5, upper=1.5)
+    #image = tf.contrib.image.rotate(image, angle * np.pi / 180, interpolation='BILINEAR')
 
-    crop_size = np.array([image_height, image_width], dtype=np.float32)
-
-    scaled_img = tf.image.crop_and_resize(image, box, 1, crop_size)
-
-    return scaled_img
-
-
-def rotate_images(image, angle):
-
-    radian = angle * np.pi / 180
-    rotated_img = tf.contrib.image.rotate(image, radian)
-
-    return rotated_img
-
-
-def flip_images(image):
-
-    flipped_img = tf.image.flip_left_right(image)
-
-    return flipped_img
-
-
-def translate_images(image, offset):
-
-    image = tf.image.convert_image_dtype(image,tf.float32)
-    image = tf.reshape(image,[1,tf.shape(image)[0],tf.shape(image)[1],3])
-    offset_2 = np.array([offset], dtype=np.float32)
-    size = np.array([int(np.ceil((1-abs(offset[1]))*224)), int(np.ceil((1-abs(offset[0]))*224))], dtype=np.int32)
-    '''
-    if offset[0] == 0:
-
-        if offset[1] > 0:
-
-            w_start = h_start = 0
-            h_end = IMAGE_SIZE
-            w_end = int(np.ceil((1-offset[1])*IMAGE_SIZE))
-
-        elif offset[1] < 0:
-
-            w_end = h_end = IMAGE_SIZE
-            h_start = 0
-            w_start = int(np.floor(abs(offset[1])*IMAGE_SIZE))
-
-    elif offset[1] == 0:
-
-        if offset[0] > 0:
-
-            w_start = h_start = 0
-            w_end = IMAGE_SIZE
-            h_end = int(np.ceil((1-offset[0])*IMAGE_SIZE))
-
-        elif offset[0] < 0:
-
-            w_end = h_end = IMAGE_SIZE
-            w_start = 0
-            h_start = int(np.floor(abs(offset[0])*IMAGE_SIZE))
-    '''
-    glimps = tf.image.extract_glimpse(image, size, offset_2)
-    
-    translated_img = tf.image.resize_images(glimps,[224,224],method=tf.image.ResizeMethod.NEAREST_NEIGHBOR)
-    translated_img = tf.reshape(translated_img, [224,224,3])
-    translated_img = tf.image.convert_image_dtype(translated_img,tf.uint8)
-
-    return translated_img
-
-
-def augment_face(image, face_case, seed):
-
-    if face_case == 1:
-
-        angle = int(round(seed*30))
-        image = rotate_images(image, angle)
-
-    elif face_case == 2:
-
-        angle = int(round(seed*30))
-        image = rotate_images(image, -angle)
-
-    elif face_case == 3:
-
-        image = flip_images(image)
-
-    elif face_case == 4:
-
-        offset = seed*0.5
-        image = translate_images(image, np.array([-offset, offset]))
-
-    elif face_case == 5:
-
-        offset = seed*0.5
-        image = translate_images(image, np.array([-offset, -offset]))
-
-    elif face_case == 6:
-
-        offset = seed*0.5
-        image = translate_images(image, np.array([offset, offset]))
-
-    elif face_case == 7:
-
-        offset = seed*0.5
-        image = translate_images(image, np.array([offset, -offset]))
+    #image = tf.random_crop(image, [210,210,3])
+    #image = tf.image.resize_images(image,[224,224], method=tf.image.ResizeMethod.NEAREST_NEIGHBOR)
 
     return image
 
-'''
-def false_fn(warper, step):
-
-    warper = float(1)
-
-    return warper
-
-
-def true_fn(warper, step):
-
-    i = tf.constant(1, dtype=tf.int64)
-
-    c = lambda r: tf.less(step, 10000*i)
-    b = lambda i: tf.add(i,1)
-    tf.while_loop(c, b, [i])
-    
-    warper = warper[1]
-
-    return warper
-'''
 
 def find_warper(warper, step):
 
@@ -293,14 +176,14 @@ def augment_spectrogram(spectrogram, warper):
 def main(unused_argv):
 
     
-    imagePATH='/home/gryphonlab/Ioannis/Works/BAUM-1/InputFaces/BAUM1s_MP4_all/S021_077/frame42.jpg'
+    imagePATH='/home/gryphonlab/Ioannis/Works/CODES/RML/frame51.jpg'
     image_string = tf.read_file(imagePATH)
     original = tf.image.decode_jpeg(image_string, channels=3)
     image = tf.image.convert_image_dtype(original,tf.float32)
     #image = tf.reshape(original,[image_width,image_height,3])
     
     image = tf.image.resize_images(image,[224,224], method=tf.image.ResizeMethod.NEAREST_NEIGHBOR)
-    image = augment_face(image, 6)
+    image = augment_face(image,60*np.random.random()-30)
     image = tf.image.convert_image_dtype(image,tf.uint8)
     image = tf.image.encode_jpeg(image,format='rgb')
 
@@ -323,10 +206,8 @@ def main(unused_argv):
     #    saver = tf.train.Saver([spectrogram_decoded])
 
     #    saver.save(sess,'/home/gryphonlab/Ioannis/Works/CODES/RML/my-checkpoint')
-    np.save('/home/gryphonlab/Ioannis/Works/CODES/RML/99.npy',tf.Session().run(spectrogram_decoded),allow_pickle=False)
+    np.save('/home/gryphonlab/Ioannis/Works/CODES/RML/98.npy',tf.Session().run(spectrogram_decoded),allow_pickle=False)
     '''
-
-
 
 
 if __name__ == '__main__':
