@@ -21,7 +21,7 @@ num_frames = 7
 # Stride between consecutive video frames
 stride_frame = 2
 # List of sessions or/and speakers to leave out
-sessions_out = ['s4']
+sessions_out = ['s1']
 
 
 ########################## FUNCTIONS ###########################
@@ -63,11 +63,11 @@ def read_data(datasetPATH):
     # Lists to append total face, spectrogram paths and emotion labels
     facesPATH, labels = list(), list()
 
-    speakers = os.listdir(datasetPATH + 'InputSpectrograms/')
+    speakers = os.listdir(datasetPATH + 'InputFaces/')
 
     for speaker in speakers:
         
-        sessionPATH = datasetPATH + 'InputSpectrograms/' + speaker + '/'
+        sessionPATH = datasetPATH + 'InputFaces/' + speaker + '/'
         languages = os.listdir(sessionPATH)
         
         if len(languages) < 7:
@@ -85,39 +85,23 @@ def read_data(datasetPATH):
                         label = convert_emotion(vid[:2])
                         
                         videoPATH = speakerPATH + vid + '/'
-                        spectrograms = os.listdir(videoPATH)
+                        faces = os.listdir(videoPATH)
 
-                        for spectrogram in spectrograms:
+                        for face in faces:
 
-                            spectrogramPATH = videoPATH + spectrogram
-                            # Find center frame of current spectrogram
-                            center_frame = int(round(float(spectrogram[2:-4])*video_rate))
                             # Path of center frame
-                            centerframePATH = datasetPATH + 'InputFaces/' + speaker + '/' + language + '/' + vid + '/frame'+str(center_frame)+'.jpg'
+                            facePATH = videoPATH + face
                             # Check that frame exists
-                            if os.path.isfile(centerframePATH):
+                            if os.path.isfile(facePATH):
 
-                               # Index of current frame number in path string
-                                i = int(centerframePATH.find('frame')+5)
-                                # Center frame number
-                                center = int(centerframePATH[i:-4])
-                                # Run to find all desired frames of a spectrogram
-                                for f in range(num_frames):
-                        
-                                    # Desired frame according to center frame and stride
-                                    desired_frame = center+stride_frame*(f-int((num_frames-1)/2))
-                                    # Path of current frame
-                                    facePATH = centerframePATH[:i]+str(desired_frame)+'.jpg'
-                                    # Check that frame exists
-                                    if os.path.isfile(facePATH):
-
-                                        # Append to faces path list
-                                        facesPATH.append(facePATH)
-                                        # Append emotion label
-                                        labels.append(label)
+                                # Append to faces path list
+                                facesPATH.append(facePATH)
+                                # Append emotion label
+                                labels.append(label)
+                            
                             else:
 
-                                print('ERROR[0]: Frame '+centerframePATH+' not found..!')
+                                print('ERROR[0]: Frame '+facePATH+' not found..!')
 
         else:
                     
@@ -129,45 +113,25 @@ def read_data(datasetPATH):
                 label = convert_emotion(vid[:2])
 
                 videoPATH = sessionPATH + vid + '/'
-                spectrograms = os.listdir(videoPATH)
+                faces = os.listdir(videoPATH)
 
-                for spectrogram in spectrograms:
+                for face in faces:
 
-                    spectrogramPATH = videoPATH + spectrogram
-                    # Find center frame of current spectrogram
-                    center_frame = int(round(float(spectrogram[2:-4])*video_rate))
                     # Path of center frame
-                    centerframePATH = datasetPATH + 'InputFaces/' + speaker + '/' + vid + '/frame'+str(center_frame)+'.jpg'
+                    facePATH = videoPATH + face
                     # Check that frame exists
-                    if os.path.isfile(centerframePATH):
+                    if os.path.isfile(facePATH):
 
-                        # Index of current frame number in path string
-                        i = int(centerframePATH.find('frame')+5)
-                        # Center frame number
-                        center = int(centerframePATH[i:-4])
-                        # Run to find all desired frames of a spectrogram
-                        for f in range(num_frames):
-                        
-                            # Desired frame according to center frame and stride
-                            desired_frame = center+stride_frame*(f-int((num_frames-1)/2))
-                            # Path of current frame
-                            facePATH = centerframePATH[:i]+str(desired_frame)+'.jpg'
-                            # Check that frame exists
-                            if os.path.isfile(facePATH):
-
-                                # Append to faces path list
-                                facesPATH.append(facePATH)
-                                # Append emotion label
-                                labels.append(label)
+                        # Append to faces path list
+                        facesPATH.append(facePATH)
+                        # Append emotion label
+                        labels.append(label)
             
-                            else:
-
-                                # Else raise error
-                                print('ERROR[2] Frame '+centerframePATH+' not found..!')
-
                     else:
 
-                        print('ERROR[1]: Frame '+centerframePATH+' not found..!')
+                        # Else raise error
+                        print('ERROR[1] Frame '+facePATH+' not found..!')
+
 
     # Concatenate to numpy array
     data = np.array([facesPATH, labels])
@@ -236,7 +200,7 @@ def main():
     d2 = {'eval_faces': eval_faces, 'eval_labels': eval_labels}
     #d3 = {'pred_faces': pred_faces, 'pred_labels': pred_labels}
 
-    create_folder(datasetPATH+'visual/')
+    create_folder(datasetPATH+'Core/visual/')
 
     df1 = pd.DataFrame(data=d1)
     df2 = pd.DataFrame(data=d2)
